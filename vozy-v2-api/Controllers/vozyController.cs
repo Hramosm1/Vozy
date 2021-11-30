@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
+using vozy_v2_api.core;
 using vozy_v2_api.models;
 using System.Data.SqlClient;
 using Dapper;
@@ -11,7 +11,8 @@ namespace vozy_v2_api.Controllers
     [ApiController]
     public class vozyController : ControllerBase
     {
-        private string connection = "Data Source=192.168.8.6;Initial Catalog=WS_InteligenciaDB_Fase2;User ID=ddonis;Password=0TkZDbcSPpn8";
+        //private string connection = "Data Source=192.168.8.6;Initial Catalog=WS_InteligenciaDB_Fase2;User ID=ddonis;Password=0TkZDbcSPpn8";
+        private string connection = "Data Source=192.";
         public vozyController()
         {
            
@@ -32,11 +33,13 @@ namespace vozy_v2_api.Controllers
                 }
                 else
                 {
+                    logs.logError("El password es incorrecto");
                      return BadRequest(new {message = "El password es incorrecto" });
                 }
             }
             else
             {
+                logs.logError("El usuario es incorrecto");
                 return BadRequest(new {message = "El usuario es incorrecto" });
             }
         }
@@ -62,19 +65,22 @@ namespace vozy_v2_api.Controllers
                             return Ok(new { message = "El registro ha sido guardado exitosamente"});
                         }
                     }
-                    catch (Exception)
+                    catch (Exception err)
                     {
+                        logs.logError("No se pudo guardar - "+err.Message);
                         return BadRequest(new { message = "No se pudo guardar" });
                     }
                    
                 }
                 else
                 {
+                    logs.logError("Token no valido");
                     return StatusCode(401, new { message = "Token no valido" });
                 }
             }
             else
             {
+                logs.logError("Sin Token");
                 return StatusCode(401, new { message = "Sin Token" });
             }
         }
