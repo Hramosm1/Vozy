@@ -12,7 +12,7 @@ namespace vozy_v2_api.Controllers
     public class vozyController : ControllerBase
     {
         //private string connection = "Data Source=192.168.8.6;Initial Catalog=WS_InteligenciaDB_Fase2;User ID=ddonis;Password=0TkZDbcSPpn8";
-        private string connection = "Data Source=192.";
+        private string connection = "Server=192.168.8.8;Database=WS_InteligenciaDB_Fase2;Trusted_Connection=True;";
         public vozyController()
         {
            
@@ -57,12 +57,20 @@ namespace vozy_v2_api.Controllers
                 {
                     try
                     {
+                        if (value!= null)
+                        {
                         using (SqlConnection db = new(connection))
                         {
                             string ob = Newtonsoft.Json.JsonConvert.SerializeObject(value.content);
-                            string query = $"INSERT INTO vozy (jsonData) values ('{ob}')";
-                            db.Execute(query, new { json = value.ToString() });
+                            string query = $"INSERT INTO vozy (jsonData, contacId, campaignId, sessionId) values (@jsondata, @contact, @campaign, @session)";
+                            db.Execute(query, new { jsondata = ob, contact = value.content.contact_id, campaign=value.content.campaign_id, session=value.content.session_id });
                             return Ok(new { message = "El registro ha sido guardado exitosamente"});
+                        }
+                        }
+                        else
+                        {
+                            logs.logError("falta body en la solicitud");
+                            return BadRequest(new {message = "falta body"});
                         }
                     }
                     catch (Exception err)
