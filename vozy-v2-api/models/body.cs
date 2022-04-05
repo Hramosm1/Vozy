@@ -1,10 +1,9 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-namespace vozy_v2_api.models
+﻿namespace vozy_v2_api.models
 {
     public class body
     {
-        public Campaign? content { get; set; }
+        
+        public dynamic content { get; set; }
     }
     public class Campaign
     {
@@ -45,8 +44,6 @@ namespace vozy_v2_api.models
             this.valor_a_pagar = valor_a_pagar;
         }
         
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
         public string? _id { get; set; }
         public string? acuerdo { get; set; }
         public string? agent_name { get; set; }
