@@ -4,6 +4,7 @@ using vozy_v2_api.models;
 using System.Data.SqlClient;
 using Dapper;
 using Newtonsoft.Json.Linq;
+using System.Text;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace vozy_v2_api.Controllers
@@ -11,47 +12,36 @@ namespace vozy_v2_api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class vozyController : ControllerBase
-    {   
+    {
         private string connection = @"Data Source=VMI662633\SQLEXPRESS;Initial Catalog=Vozy;User ID=ddonis;Password=0TkZDbcSPpn8";
         //private string connection = "Server=192.168.0.100;Database=Vozy;User ID=ddonis;Password=0TkZDbcSPpn8";
-        public vozyController()
-        {
+        public vozyController() { }
 
-        }
-        [Route("test")]
-        [HttpPost]
-        public IActionResult testPost([FromBody] body json)
-        {
-            string jsonstring = json.content.ToString();
-
-            dynamic objeto = JObject.Parse(jsonstring);
-            var str = objeto.fecha.ToString();
-            return Ok(str);
-        }
-        // GET api/vozy/token
+        // POST api/vozy/token
         [Route("token")]
         [HttpPost]
-        public IActionResult Post([FromBody] User credenciales)
+        public IActionResult Post([FromHeader] headers headers)
         {
-            jsonwebtoken jwt = new();
-            if (credenciales.user == "vozy")
+            if (headers.authorization == null)
             {
-                if (credenciales.password == "UOgVafoyJP5N11l")
-                {
-                    string token = jwt.crearToken(credenciales.user, credenciales.password);
-                    return Ok(new { token = token });
-                }
-                else
-                {
-                    logs.logError("El password es incorrecto");
-                    return BadRequest(new { message = "El password es incorrecto" });
-                }
+                return BadRequest(new { message = "No se encontraron las credenciales" });
             }
             else
             {
-                logs.logError("El usuario es incorrecto");
-                return BadRequest(new { message = "El usuario es incorrecto" });
+                string[] token = headers.authorization.Split(" ");
+                if (token[1] == "dm96eTpVT2dWYWZveUpQNU4xMWw=")
+                {
+                    jsonwebtoken jwt = new();
+                    string[] credenciales = Encoding.UTF8.GetString(Convert.FromBase64String(token[1])).Split(":");
+                    string jwtToken = jwt.crearToken(credenciales[0], credenciales[1]);
+                    return Ok(new { token = jwtToken, type = "JWT" });
+                }
+                else
+                {
+                    return Unauthorized(new { message = "El usuario o la contraseña no son correctas" });
+                }
             }
+            // if (credenciales.password == "UOgVafoyJP5N11l")
         }
 
         [Route("campaign/content")]
@@ -62,12 +52,12 @@ namespace vozy_v2_api.Controllers
             dynamic contentObj = JObject.Parse(contentStr);
             object postObj = value.content;
             jsonwebtoken jwt = new();
-            string token = headers.authorization;
-            if (token != null)
+            if (headers.authorization != null)
             {
+                string[] tokenArr = headers.authorization.Split(" ");
+                string token = tokenArr[tokenArr.Length];
                 if (jwt.validarToken(token))
                 {
-
                     if (value != null)
                     {
                         using (SqlConnection db = new(connection))
@@ -87,10 +77,7 @@ namespace vozy_v2_api.Controllers
                                 if (validacion == "lili_recagua_collections")
                                 {
                                     HttpClient client = new HttpClient();
-                                    //*************************************DESCOMENTAR PARA PRUEBAS*******************************
-                                    //HttpResponseMessage response = await client.PostAsJsonAsync("https://localhost:44364/api/VozyAutomatizations", postObj);
                                     
-                                    //*************************************COMENTAR PARA PRUEBAS**********************************
                                     HttpResponseMessage response = await client.PostAsJsonAsync("http://164.68.125.229:8061/api/VozyAutomatizations", postObj);
                                     if ((int)response.StatusCode == 200)
                                     {
@@ -123,13 +110,13 @@ namespace vozy_v2_api.Controllers
                 else
                 {
                     logs.logError("Token no valido");
-                    return StatusCode(401, new { message = "Token no valido" });
+                    return Unauthorized(new { message = "Token no valido" });
                 }
             }
             else
             {
                 logs.logError("Sin Token");
-                return StatusCode(401, new { message = "Sin Token" });
+                return Unauthorized(new { message = "Sin Token" });
             }
         }
     }
