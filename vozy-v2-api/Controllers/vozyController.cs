@@ -12,7 +12,7 @@ namespace vozy_v2_api.Controllers
   [ApiController]
   public class vozyController : ControllerBase
   {
-    private string connection = @"Data Source=VMI662633\SQLEXPRESS;Initial Catalog=Vozy;User ID=ddonis;Password=0TkZDbcSPpn8";
+    private string connection = "Data Source=62.171.184.240;Initial Catalog=Vozy;User ID=SA;Password=8e3lR5Nz3ago";
     public vozyController() { }
 
     // POST api/vozy/token
@@ -39,7 +39,6 @@ namespace vozy_v2_api.Controllers
           return Unauthorized(new { message = "El usuario o la contraseña no son correctas" });
         }
       }
-      // if (credenciales.password == "UOgVafoyJP5N11l")
     }
 
     [Route("campaign/content")]
@@ -61,26 +60,27 @@ namespace vozy_v2_api.Controllers
             using (SqlConnection db = new(connection))
             {
               string validacion = contentObj.agent_name.ToString().ToLower();
-              string query = $"INSERT INTO VozyEndpoint (jsonData, campaignId,contactId,sessionId) output INSERTED.ID VALUES(@jsondata, @campaign, @contact, @session)";
+              string query = $"INSERT INTO VozyEndpoint (jsonData,campaignId,contactId,sessionId,agentName) output INSERTED.ID VALUES(@jsondata, @campaign, @contact, @session, @agent)";
               object parametros = new
               {
                 jsondata = contentStr,
                 contact = contentObj.contact_id.ToString(),
                 campaign = contentObj.campaign_id.ToString(),
-                session = contentObj.session_id.ToString()
+                session = contentObj.session_id.ToString(),
+                agent = contentObj.agent_name.ToString()
               };
               try
               {
-                //var newid = db.ExecuteScalar(query, parametros);
+                var newid = db.ExecuteScalar(query, parametros);
                 if (validacion == "lili_recagua_collections")
                 {
                   HttpClient client = new HttpClient();
-                  /*HttpResponseMessage response = await client.PostAsJsonAsync("http://164.68.125.229:8061/api/VozyAutomatizations", postObj);
+                  HttpResponseMessage response = await client.PostAsJsonAsync("http://62.171.184.240:8092/api/VozyAutomatizations", postObj);
                   if ((int)response.StatusCode == 200)
                   {
                     string newquery = $"UPDATE VozyEndpoint SET sic = 1 WHERE id = @newid";
                     db.Execute(newquery, new { newid = newid });
-                  }*/
+                  }
                   return Ok(new { message = "El registro ha sido guardado exitosamente" });
                 }
                 else
