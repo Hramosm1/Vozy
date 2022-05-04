@@ -5,7 +5,7 @@ namespace vozy_v2_api.core
     {
         public static void logError(string err)
         {
-            string path = @"c:\logs\vozyApi\";
+            string path = "~/logs-vozy/";
             string date = $"{DateTime.Now.Day}-{DateTime.Now.Month}-{DateTime.Now.Year}.txt";
             if(Directory.Exists(path))
             {
