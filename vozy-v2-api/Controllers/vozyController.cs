@@ -10,8 +10,6 @@ namespace vozy_v2_api.Controllers
   [ApiController]
   public class vozyController : ControllerBase
   {
-    // private string connection = @"Data Source=VMI662633\SQLEXPRESS;Initial Catalog=Vozy;User ID=ddonis;Password=0TkZDbcSPpn8";
-    //private string connection = "Server=192.168.0.100;Database=Vozy;User ID=ddonis;Password=0TkZDbcSPpn8";
     public vozyController()
     {
 
@@ -66,10 +64,6 @@ namespace vozy_v2_api.Controllers
               if (validacion == "lili_recagua_collections")
               {
                 HttpClient client = new HttpClient();
-                //*************************************DESCOMENTAR PARA PRUEBAS*******************************
-                //HttpResponseMessage response = await client.PostAsJsonAsync("https://localhost:44364/api/VozyAutomatizations", postObj);
-
-                //*************************************COMENTAR PARA PRUEBAS**********************************
                 HttpResponseMessage response = await client.PostAsJsonAsync("http://164.68.125.229:8061/api/VozyAutomatizations", postObj);
 
                 return Ok(new { message = "El registro ha sido guardado exitosamente" });
