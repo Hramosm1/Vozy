@@ -25,7 +25,8 @@ mariadb = {
           { nombre: 'contactId', tipo: 'varchar(50)' },
           { nombre: 'sessionId', tipo: 'varchar(50)' },
           { nombre: 'agentName', tipo: 'varchar(50)' },
-          { nombre: 'insertDate', tipo: 'DateTime', default: 'getdate()' }
+          { nombre: 'insertDate', tipo: 'DateTime', default: 'getdate()' },
+          { nombre: 'sic', tipo: 'boolean', default: 0}
         ]
       }
     ]

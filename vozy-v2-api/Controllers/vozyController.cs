@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using Dapper;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using MySqlConnector;
 
 namespace vozy_v2_api.Controllers
 {
@@ -12,7 +13,13 @@ namespace vozy_v2_api.Controllers
   [ApiController]
   public class vozyController : ControllerBase
   {
-    private string connection = "Data Source=62.171.184.240;Initial Catalog=Vozy;User ID=SA;Password=8e3lR5Nz3ago";
+    private MySqlConnectionStringBuilder builder = new MySqlConnectionStringBuilder
+    {
+      Server = "62.171.184.240",
+      UserID = "ddonis",
+      Password = "d6!k7I4^MK08",
+      Database = "Vozy"
+    };
     public vozyController() { }
 
     // POST api/vozy/token
@@ -20,13 +27,13 @@ namespace vozy_v2_api.Controllers
     [HttpPost]
     public IActionResult Post([FromHeader] headers headers)
     {
-      if (headers.authorization == null)
+      if (headers.Authorization == null)
       {
         return BadRequest(new { message = "No se encontraron las credenciales" });
       }
       else
       {
-        string[] token = headers.authorization.Split(" ");
+        string[] token = headers.Authorization.Split(" ");
         if (token[1] == "dm96eTpVT2dWYWZveUpQNU4xMWw=")
         {
           jsonwebtoken jwt = new();
@@ -48,38 +55,51 @@ namespace vozy_v2_api.Controllers
       string contentStr = value.content.ToString();
       dynamic contentObj = JObject.Parse(contentStr);
       object postObj = value.content;
+      string newId;
       jsonwebtoken jwt = new();
-      if (headers.authorization != null)
+      if (headers.Authorization != null)
       {
-        string[] tokenArr = headers.authorization.Split(" ");
-        string token = tokenArr[tokenArr.Length-1];
+        string[] tokenArr = headers.Authorization.Split(" ");
+        string token = tokenArr[tokenArr.Length - 1];
         if (jwt.validarToken(token))
         {
           if (value != null)
           {
-            using (SqlConnection db = new(connection))
+            using (MySqlConnection conn = new(builder.ConnectionString))
             {
               string validacion = contentObj.agent_name.ToString().ToLower();
-              string query = $"INSERT INTO VozyEndpoint (jsonData,campaignId,contactId,sessionId,agentName) output INSERTED.ID VALUES(@jsondata, @campaign, @contact, @session, @agent)";
-              object parametros = new
-              {
-                jsondata = contentStr,
-                contact = contentObj.contact_id.ToString(),
-                campaign = contentObj.campaign_id.ToString(),
-                session = contentObj.session_id.ToString(),
-                agent = contentObj.agent_name.ToString()
-              };
               try
               {
-                var newid = db.ExecuteScalar(query, parametros);
+                await conn.OpenAsync();
+                using (var cmd = new MySqlCommand())
+                {
+                  cmd.Connection = conn;
+                  cmd.CommandText = "CALL SP_InsertGestion(@jsondata, @campaign, @contact, @session, @agent)";
+                  cmd.Parameters.AddWithValue("jsondata", contentStr);
+                  cmd.Parameters.AddWithValue("contact", contentObj.contact_id.ToString());
+                  cmd.Parameters.AddWithValue("campaign", contentObj.campaign_id.ToString());
+                  cmd.Parameters.AddWithValue("session", contentObj.session_id.ToString());
+                  cmd.Parameters.AddWithValue("agent", contentObj.agent_name.ToString());
+                  using (var reader = await cmd.ExecuteReaderAsync())
+                  {
+                    await reader.ReadAsync();
+                    newId = reader.GetString(0);
+                  }
+
+                }
                 if (validacion == "lili_recagua_collections")
                 {
                   HttpClient client = new HttpClient();
                   HttpResponseMessage response = await client.PostAsJsonAsync("http://62.171.184.240:8092/api/VozyAutomatizations", postObj);
                   if ((int)response.StatusCode == 200)
                   {
-                    string newquery = $"UPDATE VozyEndpoint SET sic = 1 WHERE id = @newid";
-                    db.Execute(newquery, new { newid = newid });
+                    using (var cmd = new MySqlCommand())
+                    {
+                      cmd.Connection = conn;
+                      cmd.CommandText = "UPDATE VozyEndpoint SET sic = 1 WHERE id = @newid";
+                      cmd.Parameters.AddWithValue("id", newId);
+                      await cmd.ExecuteNonQueryAsync();
+                    }
                   }
                   return Ok(new { message = "El registro ha sido guardado exitosamente" });
                 }
@@ -110,7 +130,7 @@ namespace vozy_v2_api.Controllers
       else
       {
         logs.logError("Sin Token");
-        return Unauthorized(new { message = "Sin Token" });
+        return Unauthorized(new { message = headers });
       }
     }
   }
