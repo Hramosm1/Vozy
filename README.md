@@ -12,15 +12,15 @@ funciones bien definidas:
 Actualmente la base de datos se encuentra unicamente en el servidor Ubuntu
 Con una estructura de esta forma
 ```javascript
-SqlServer = {
+mariadb = {
   BaseDeDatos: {
     nombre: 'Vozy',
     tablas: [
       {
         nombre: 'VozyEndpoint',
         columnas: [
-          { nombre: 'id', tipo: 'uniqueidentifier', default: 'newid()' },
-          { nombre: 'jsonData', tipo: 'varchar(max)' },
+          { nombre: 'id', tipo: 'UUID', PrimaryKey:true },
+          { nombre: 'jsonData', tipo: 'text', notNull:true },
           { nombre: 'campaignId', tipo: 'varchar(50)' },
           { nombre: 'contactId', tipo: 'varchar(50)' },
           { nombre: 'sessionId', tipo: 'varchar(50)' },
@@ -31,4 +31,9 @@ SqlServer = {
     ]
   }
 }
+```
+
+Para almacenar gestiones se utiliza el proceso almacenado **SP_InsertGestion**
+```sql
+call SP_InsertGestion('jsonData','campaignId','contactId','sessionId','agentName')
 ```
