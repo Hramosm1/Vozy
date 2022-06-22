@@ -90,7 +90,7 @@ namespace vozy_v2_api.Controllers
                 if (validacion == "lili_recagua_collections")
                 {
                   HttpClient client = new HttpClient();
-                  HttpResponseMessage response = await client.PostAsJsonAsync("http://62.171.184.240:8092/api/VozyAutomatizations", postObj);
+                  HttpResponseMessage response = await client.PostAsJsonAsync("http://62.171.184.240:9432/api/VozyAutomatizations", postObj);
                   if ((int)response.StatusCode == 200)
                   {
                     using (var cmd = new MySqlCommand())
