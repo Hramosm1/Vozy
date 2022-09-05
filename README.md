@@ -1,5 +1,6 @@
 # Vozy Fase 1
 
+Publicada en: ***http://62.171.184.240:9431***.
 La fase 1 de vozy tiene 4 
 funciones bien definidas:
 
@@ -12,23 +13,29 @@ funciones bien definidas:
 Actualmente la base de datos se encuentra unicamente en el servidor Ubuntu
 Con una estructura de esta forma
 ```javascript
-SqlServer = {
+mariadb = {
   BaseDeDatos: {
     nombre: 'Vozy',
     tablas: [
       {
         nombre: 'VozyEndpoint',
         columnas: [
-          { nombre: 'id', tipo: 'uniqueidentifier', default: 'newid()' },
-          { nombre: 'jsonData', tipo: 'varchar(max)' },
+          { nombre: 'id', tipo: 'UUID', PrimaryKey:true },
+          { nombre: 'jsonData', tipo: 'text', notNull:true },
           { nombre: 'campaignId', tipo: 'varchar(50)' },
           { nombre: 'contactId', tipo: 'varchar(50)' },
           { nombre: 'sessionId', tipo: 'varchar(50)' },
           { nombre: 'agentName', tipo: 'varchar(50)' },
-          { nombre: 'insertDate', tipo: 'DateTime', default: 'getdate()' }
+          { nombre: 'insertDate', tipo: 'DateTime', default: 'getdate()' },
+          { nombre: 'sic', tipo: 'boolean', default: 0}
         ]
       }
     ]
   }
 }
+```
+
+Para almacenar gestiones se utiliza el proceso almacenado **SP_InsertGestion**
+```sql
+call SP_InsertGestion('jsonData','campaignId','contactId','sessionId','agentName')
 ```
