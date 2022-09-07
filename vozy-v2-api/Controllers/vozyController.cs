@@ -16,15 +16,11 @@ namespace vozy_v2_api.Controllers
         private MySqlConnectionStringBuilder builder = new MySqlConnectionStringBuilder
         {
             Server = "62.171.184.240",
-            UserID = "ddonis",
-            Password = "d6!k7I4^MK08",
+            UserID = "Vozy",
+            Password = "QzmCREHM2G7U",
             Database = "Vozy",
             Port = 13306
         };
-
-        public vozyController()
-        {
-        }
 
         // POST api/vozy/token
         [Route("token")]
@@ -58,7 +54,7 @@ namespace vozy_v2_api.Controllers
         {
             Dictionary<string, string> url = new Dictionary<string, string>();
             url.Add("lili_recagua_collections", "http://62.171.184.240:9432/api/VozyAutomatizations");
-            url.Add("Recagua_CollectionW2", "http://62.171.184.240:9432/api/VozyAutomatizations/web2");
+            url.Add("recagua_collectionw2", "http://62.171.184.240:9432/api/VozyAutomatizations/web2");
             string contentStr = value.content.ToString();
             dynamic contentObj = JObject.Parse(contentStr);
             object postObj = value.content;
@@ -95,18 +91,19 @@ namespace vozy_v2_api.Controllers
                                     }
                                 }
 
-                                if (validacion == "lili_recagua_collections" || validacion == "Recagua_CollectionW2")
+                                if (validacion == "lili_recagua_collections" || validacion == "recagua_collectionw2")
                                 {
                                     HttpClient client = new HttpClient();
                                     HttpResponseMessage response =
                                         await client.PostAsJsonAsync(url[validacion], postObj);
+                                    Console.WriteLine(response.Content);
                                     if ((int)response.StatusCode == 200)
                                     {
                                         using (var cmd = new MySqlCommand())
                                         {
                                             cmd.Connection = conn;
                                             cmd.CommandText = "UPDATE VozyEndpoint SET sic = 1 WHERE id = @newid";
-                                            cmd.Parameters.AddWithValue("id", newId);
+                                            cmd.Parameters.AddWithValue("newid", newId);
                                             await cmd.ExecuteNonQueryAsync();
                                         }
                                     }
@@ -120,6 +117,7 @@ namespace vozy_v2_api.Controllers
                             }
                             catch (Exception err)
                             {
+                                Console.WriteLine("No se pudo guardar - " + err.Message);
                                 logs.logError("No se pudo guardar - " + err.Message);
                                 return BadRequest(new { message = "No se pudo guardar" });
                             }
@@ -127,18 +125,21 @@ namespace vozy_v2_api.Controllers
                     }
                     else
                     {
+                        Console.WriteLine("falta body en la solicitud");
                         logs.logError("falta body en la solicitud");
                         return BadRequest(new { message = "falta body" });
                     }
                 }
                 else
                 {
+                    Console.WriteLine("Token no valido");
                     logs.logError("Token no valido");
                     return Unauthorized(new { message = "Token no valido" });
                 }
             }
             else
             {
+                Console.WriteLine("Sin Token");
                 logs.logError("Sin Token");
                 return Unauthorized(new { message = headers });
             }
