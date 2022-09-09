@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using vozy_v2_api.core;
 using vozy_v2_api.models;
-using System.Data.SqlClient;
-using Dapper;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using MySqlConnector;
