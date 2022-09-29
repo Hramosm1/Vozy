@@ -32,7 +32,7 @@ namespace vozy_v2_api.Controllers
             else
             {
                 string[] token = headers.Authorization.Split(" ");
-                if (token[1] == "dm96eTpVT2dWYWZveUpQNU4xMWw=")
+                    if (token[1] == "dm96eTpVT2dWYWZveUpQNU4xMWw=")
                 {
                     jsonwebtoken jwt = new();
                     string[] credenciales = Encoding.UTF8.GetString(Convert.FromBase64String(token[1])).Split(":");
@@ -69,6 +69,7 @@ namespace vozy_v2_api.Controllers
                         using (MySqlConnection conn = new(builder.ConnectionString))
                         {
                             string validacion = contentObj.agent_name.ToString().ToLower();
+                            //GUARDAR EN LA BASE DE DATOS LOCAL
                             try
                             {
                                 await conn.OpenAsync();
@@ -88,13 +89,14 @@ namespace vozy_v2_api.Controllers
                                         newId = reader.GetString(0);
                                     }
                                 }
-
+                                //VALIDAR AGENTE Y ENVIARLO A FASE 2 DE SER VALIDO
                                 if (validacion == "lili_recagua_collections" || validacion == "recagua_collectionw2")
                                 {
                                     HttpClient client = new HttpClient();
                                     HttpResponseMessage response =
                                         await client.PostAsJsonAsync(url[validacion], postObj);
-                                    Console.WriteLine(response.Content);
+
+                                    //SI SE GUARDO EN EL SIC ACTUALIZAR LA BASE DE DATOS LOCAL
                                     if ((int)response.StatusCode == 200)
                                     {
                                         using (var cmd = new MySqlCommand())
