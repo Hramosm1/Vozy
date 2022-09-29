@@ -95,8 +95,7 @@ namespace vozy_v2_api.Controllers
                                     HttpClient client = new HttpClient();
                                     HttpResponseMessage response =
                                         await client.PostAsJsonAsync(url[validacion], postObj);
-                                    Console.WriteLine(response.Content);
-                                    
+
                                     //SI SE GUARDO EN EL SIC ACTUALIZAR LA BASE DE DATOS LOCAL
                                     if ((int)response.StatusCode == 200)
                                     {
